@@ -1,6 +1,15 @@
 # Import numpy and OpenCV
 import numpy as np
 import cv2
+import matplotlib.pyplot as plt
+
+# Function to plot the trajectory
+def plot_trajectory(trajectory):
+    plt.plot(trajectory[:, 0], trajectory[:, 1], 'b.')
+    plt.xlabel('X Position')
+    plt.ylabel('Y Position')
+    plt.title('Stabilized Trajectory')
+    plt.show()
 
 
 def movingAverage(curve, radius): 
@@ -147,6 +156,9 @@ for i in range(n_frames-2):
   # Apply affine wrapping to the given frame
   frame_stabilized = cv2.warpAffine(frame, m, (w,h))
 
+  
+
+
   # Fix border artifacts
   frame_stabilized = fixBorder(frame_stabilized) 
 
@@ -156,9 +168,23 @@ for i in range(n_frames-2):
   # If the image is too big, resize it.
   if(frame_out.shape[1] > 1920): 
     frame_out = cv2.resize(frame_out, (frame_out.shape[1]//2, frame_out.shape[0]//2))
+
+  # Draw lines between original and stabilized points
+  # For example, you can draw lines between corresponding points in the original and stabilized frames
+  # Assuming prev_pts and curr_pts are still available from the stabilization process
   
+  for prev_pt, curr_pt in zip(prev_pts, curr_pts):
+    prev_pt = tuple(map(int, prev_pt.ravel()))
+    curr_pt = tuple(map(int, curr_pt.ravel()))
+    cv2.line(frame_stabilized, prev_pt, curr_pt, (0, 255, 0), 1)
+
+  # Display before and after frames  
   cv2.imshow("Before and After", frame_out)
   cv2.waitKey(10)
+
+  # After processing all frames, plot the trajectory
+  plot_trajectory(smoothed_trajectory)
+
   out.write(frame_out)
 
 # Release video
